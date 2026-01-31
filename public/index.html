@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rowbot Leaderboard</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent: #238636;
+            --accent-glow: rgba(35, 134, 54, 0.4);
+            --gradient-start: #1f242d;
+            --gradient-end: #0d1117;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+            background: -webkit-linear-gradient(45deg, #eee, #999);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: slideUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .user-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .user-pledge {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #2ea043);
+            width: 0%;
+            transition: width 1s ease-in-out;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        .daily-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 1rem;
+        }
+
+        .day-box {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+            padding: 8px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .day-box.active {
+            background: rgba(46, 160, 67, 0.2);
+            border: 1px solid rgba(46, 160, 67, 0.5);
+        }
+
+        .day-meters {
+            display: block;
+            margin-top: 2px;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Concept2 Leaderboard</h1>
+        <p class="subtitle">Weekly Rowing Challenge</p>
+    </header>
+
+    <div class="container" id="club-stats" style="margin-bottom: 2rem;">
+        <!-- Club Stats will be injected here -->
+    </div>
+
+    <div class="container" id="leaderboard">
+        <!-- Users will be populated here -->
+        <div style="text-align:center; color: #888;">Loading data...</div>
+    </div>
+
+    <script>
+        async function fetchLeaderboard() {
+            try {
+                const response = await fetch('/api/leaderboard');
+                const data = await response.json();
+                renderClubStats(data);
+                renderLeaderboard(data.leaderboard);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('leaderboard').innerHTML = '<div style="text-align:center; color: #f85149;">Failed to load data.</div>';
+            }
+        }
+
+        function renderClubStats(data) {
+            const container = document.getElementById('club-stats');
+            const { clubTotalMeters, clubTotalPledge, clubDailyTotals } = data;
+
+            const percent = clubTotalPledge > 0 ? Math.min((clubTotalMeters / clubTotalPledge) * 100, 100) : 0;
+
+            container.innerHTML = `
+                <div class="card" style="opacity: 1; transform: none; background: rgba(35, 134, 54, 0.1); border-color: rgba(35, 134, 54, 0.3);">
+                    <div class="user-header">
+                        <span class="user-name" style="color: #3fb950; font-size: 1.8rem;">🏸 Club Total</span>
+                        <span class="user-pledge" style="background: rgba(35, 134, 54, 0.2); color: #fff;">Goal: ${clubTotalPledge.toLocaleString()}m</span>
+                    </div>
+                     <div class="progress-container" style="height: 24px;">
+                        <div class="progress-bar" style="width: ${percent}%; background: linear-gradient(90deg, #2ea043, #3fb950);"></div>
+                    </div>
+                    <div class="stats" style="font-size: 1.1rem; margin-top: 0.5rem;">
+                        <span>Total Rowed: <span class="stat-value" style="color: #fff;">${clubTotalMeters.toLocaleString()}m</span></span>
+                        <span style="color: #3fb950; font-weight: bold;">${percent.toFixed(1)}% Complete</span>
+                    </div>
+                     <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                        <h3 style="margin: 0 0 1rem 0; font-size: 1rem; color: var(--text-secondary);">Club Daily Activity</h3>
+                        <div class="daily-grid">
+                            ${generateDailyGrid(clubDailyTotals)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLeaderboard(users) {
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = '';
+
+            users.forEach((user, index) => {
+                const pledge = user.pledge || 0;
+                const percent = pledge > 0 ? Math.min((user.totalMeters / pledge) * 100, 100) : 0;
+
+                // Delay animation based on index
+                const delay = index * 100;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.animationDelay = `${delay}ms`;
+
+                card.innerHTML = `
+                    <div class="user-header">
+                        <span class="user-name">${index + 1}. ${user.discord_nickname || user.discord_username || 'Unknown'}</span>
+                        <span class="user-pledge">Goal: ${pledge.toLocaleString()}m</span>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${percent}%"></div>
+                    </div>
+                    
+                    <div class="stats">
+                        <span>Total: <span class="stat-value">${user.totalMeters.toLocaleString()}m</span></span>
+                        <span>${percent.toFixed(1)}% Complete</span>
+                    </div>
+
+                    <div class="daily-grid">
+                        ${generateDailyGrid(user.daily)}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function generateDailyGrid(dailyData) {
+            // Assume 7 days roughly. We could improve to show dates.
+            // For now, just showing keys in order if available, or just mapping the object
+            // To make it look like a week, let's map keys sorted.
+            const keys = Object.keys(dailyData).sort();
+            if (keys.length === 0) return '<div class="day-box">No Activity</div>';
+
+            return keys.map(date => {
+                const meters = dailyData[date];
+                return `
+                    <div class="day-box ${meters > 0 ? 'active' : ''}">
+                         ${date.slice(5)}<br>
+                         <span class="day-meters">${meters > 1000 ? (meters / 1000).toFixed(1) + 'k' : meters}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Fetch on load
+        fetchLeaderboard();
+        // Refresh every minute
+        setInterval(fetchLeaderboard, 60000);
+    </script>
+</body>
+
+</html>
