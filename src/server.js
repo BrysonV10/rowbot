@@ -66,7 +66,8 @@ export function startServer(client) {
             }
 
             // Webhook Receiver
-            if (url.pathname === "/webhook" && req.method === "POST") {
+            if (url.pathname === process.env.WEBHOOK_URL && req.method === "POST") {
+                console.log(req.headers);
                 const body = await req.json();
                 // Verify logic here if secret provided (omitted for simplicity but recommended)
                 /* 
@@ -85,10 +86,37 @@ export function startServer(client) {
 
                 // Implementation detail depends on C2 webhook payload.
                 // Assuming payload has property 'user_id' and 'new_results'
-                console.log("Received Webhook:", body);
-                // TODO: implement actual parsing based on real payload structure
+                console.log("Received Webhook Payload:", JSON.stringify(body, null, 2));
+                // if someone adds a result to our database
+                if (body.type == "result-added") {
+                    const user = dbHelpers.getUserByConcept2Id(body.result.user_id);
+                    if (!user) {
+                        console.warn(`Received webhook for unknown Concept2 ID: ${user_id}`);
+                        // We return 200 OK to stop C2 from retrying, even if we don't know the user yet
+                        return new Response("User not found", { status: 200 });
+                    }
+                    const { user_id, time, date, distance, id } = body.result;
+                    if (!user_id || !time || !date || !distance || !id) {
+                        console.error("Invalid webhook payload structure");
+                        return new Response("Invalid payload", { status: 400 });
+                    }
+                    // verify that the activity is within the date range
+                    if (new Date(date).getTime() < new Date(process.env.START_DATE).getTime() || new Date(date).getTime() > new Date(process.env.END_DATE).getTime()) {
+                        console.warn(`Received webhook for activity outside of date range: ${date}`);
+                        return new Response("Activity outside of date range", { status: 200 });
+                    }
+                    dbHelpers.addActivity(user.id, id, distance, date, body.result.type, body.result.verified);
 
-                return new Response("Webhook received", { status: 200 });
+                    // if we recieve a webhook indicating a user deleted an activity 
+                } else if (body.type == "result-deleted") {
+                    const { result_id } = body;
+                    if (!result_id) {
+                        console.error("Invalid webhook payload structure");
+                        return new Response("Invalid payload", { status: 400 });
+                    }
+                    dbHelpers.deleteActivity(result_id);
+                }
+                return new Response("Webhook processed", { status: 200 });
             }
 
             // API Leaderboard

@@ -37,6 +37,9 @@ export const dbHelpers = {
     getUser: (discordId) => {
         return db.query("SELECT * FROM users WHERE discord_id = ?").get(discordId);
     },
+    getUserByConcept2Id: (c2Id) => {
+        return db.query("SELECT * FROM users WHERE concept2_account_id = ?").get(c2Id);
+    },
     createUser: (discordId, username, nickname) => {
         return db.run(
             "INSERT INTO users (discord_id, discord_username, discord_nickname) VALUES (?, ?, ?) ON CONFLICT(discord_id) DO UPDATE SET discord_username=excluded.discord_username, discord_nickname=excluded.discord_nickname",
@@ -58,6 +61,9 @@ export const dbHelpers = {
     addActivity: (userId, logId, meters, date, type, verified) => {
         let q = db.query("INSERT INTO activities (user_id, concept2_log_id, meters, date, type, verified) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT(concept2_log_id) DO UPDATE SET meters=excluded.meters, verified=excluded.verified");
         return q.run(userId, logId, meters, date, type, verified);
+    },
+    deleteActivity: (logId) => {
+        return db.run("DELETE FROM activities WHERE concept2_log_id = ?", [logId]);
     },
     getUserActivities: (userId, startDate, endDate) => {
         return db.query(
