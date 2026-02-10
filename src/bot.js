@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events } from "discord.js";
+import { Client, GatewayIntentBits, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, ChannelType, WebhookClient } from "discord.js";
 import { dbHelpers } from "./db.js";
 import axios from "axios";
 
@@ -19,6 +19,21 @@ export async function startBot() {
 
     client.on("messageCreate", async (message) => {
         if (message.author.bot) return;
+
+        if (message.channel.type === ChannelType.DM) {
+            try {
+                const webhookClient = new WebhookClient({ url: process.env.DISCORD_DM_WEBHOOK_URL });
+                await webhookClient.send({
+                    username: `DM from ${message.author.tag}`,
+                    avatarURL: message.author.displayAvatarURL(),
+                    content: message.content || "(No content)",
+                    files: message.attachments.map(a => a.url)
+                });
+            } catch (err) {
+                console.error("Failed to forward DM:", err);
+            }
+            return;
+        }
 
         if (message.content.startsWith("!row-setup")) {
             const row = new ActionRowBuilder()
