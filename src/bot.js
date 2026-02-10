@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, ChannelType, WebhookClient } from "discord.js";
+import { Client, GatewayIntentBits, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, ChannelType, WebhookClient, AttachmentBuilder } from "discord.js";
 import { dbHelpers } from "./db.js";
 import axios from "axios";
 
@@ -71,6 +71,28 @@ export async function startBot() {
             await message.reply("Starting sync process...");
             const count = await syncAllUsers();
             await message.channel.send(`Sync complete. Processed ${count} users.`);
+        }
+
+        if (message.content.startsWith("!export-csv")) {
+            const adminRoleId = process.env.ADMIN_ROLE_ID;
+            if (!message.member?.roles.cache.has(adminRoleId)) {
+                return;
+            }
+
+            const users = dbHelpers.getUserTotals();
+            let csvContent = "Name,Total Meters,Pledge\n";
+
+            users.forEach(user => {
+                const name = user.discord_nickname || user.discord_username;
+                const totalMeters = user.total_meters;
+                const pledge = user.pledge;
+                csvContent += `"${name}",${totalMeters},${pledge}\n`;
+            });
+
+            const buffer = Buffer.from(csvContent, 'utf-8');
+            const attachment = new AttachmentBuilder(buffer, { name: 'rower_totals.csv' });
+
+            await message.reply({ content: "Here is the export:", files: [attachment] });
         }
     });
 

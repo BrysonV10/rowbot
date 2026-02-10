@@ -114,5 +114,18 @@ export const dbHelpers = {
             clubTotalPledge,
             clubDailyTotals
         };
+    },
+    getUserTotals: () => {
+        return db.query(`
+            SELECT 
+                u.discord_username, 
+                u.discord_nickname, 
+                u.pledge, 
+                COALESCE(SUM(a.meters), 0) as total_meters 
+            FROM users u
+            LEFT JOIN activities a ON u.id = a.user_id AND a.verified = 1
+            GROUP BY u.id
+            ORDER BY total_meters DESC
+        `).all();
     }
 };
