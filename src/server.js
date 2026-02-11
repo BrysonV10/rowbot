@@ -3,7 +3,7 @@ import axios from "axios";
 import { file } from "bun";
 
 export function startServer(client) {
-    const port = process.env.PORT || 3000;
+    const port = process.env.SERVER_PORT || 3000;
 
     Bun.serve({
         port,
