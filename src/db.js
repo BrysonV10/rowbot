@@ -115,6 +115,24 @@ export const dbHelpers = {
             clubDailyTotals
         };
     },
+    verifyActivity: (id) => {
+        return db.run("UPDATE activities SET verified = 1 WHERE id = ?", [id]);
+    },
+    getUnverifiedActivities: () => {
+        return db.query(`
+            SELECT 
+                a.id, 
+                u.discord_username, 
+                u.discord_nickname, 
+                a.meters, 
+                a.date, 
+                a.type 
+            FROM activities a
+            JOIN users u ON a.user_id = u.id
+            WHERE a.verified = 0 OR a.verified IS NULL
+            ORDER BY a.date DESC
+        `).all();
+    },
     getUserTotals: () => {
         return db.query(`
             SELECT 

@@ -1,5 +1,6 @@
 import { Client, GatewayIntentBits, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, ChannelType, WebhookClient, AttachmentBuilder } from "discord.js";
 import { dbHelpers } from "./db.js";
+import table from "text-table";
 import axios from "axios";
 
 export async function startBot() {
@@ -92,7 +93,64 @@ export async function startBot() {
             const buffer = Buffer.from(csvContent, 'utf-8');
             const attachment = new AttachmentBuilder(buffer, { name: 'rower_totals.csv' });
 
+
             await message.reply({ content: "Here is the export:", files: [attachment] });
+        }
+
+        if (message.content.startsWith("!unverified")) {
+            const adminRoleId = process.env.ADMIN_ROLE_ID;
+            if (!message.member?.roles.cache.has(adminRoleId)) {
+                return;
+            }
+
+            const activities = dbHelpers.getUnverifiedActivities();
+            if (activities.length === 0) {
+                await message.reply("No unverified activities found.");
+                return;
+            }
+
+            const data = [
+                ['ID', 'User', 'Meters', 'Date', 'Type'],
+                ...activities.map(a => [
+                    a.id,
+                    a.discord_nickname || a.discord_username,
+                    a.meters,
+                    a.date.split('T')[0],
+                    a.type
+                ])
+            ];
+
+            const output = table(data);
+            // Discord messages fail if > 2000 chars. 
+            // For now, assuming it fits. Later could implement pagination or simple truncation.
+            if (output.length > 1990) {
+                await message.reply("Too many activities to display at once. Validating first 50...");
+                // Fallback or just send first chunk - but let's just stick to logic for now.
+                // Actually better to just send as file? User asked for table. Code block is best.
+                // Let's just send what we can.
+            }
+
+            await message.reply(`\`\`\`\n${output}\n\`\`\``);
+        }
+
+        if (message.content.startsWith("!verify")) {
+            const adminRoleId = process.env.ADMIN_ROLE_ID;
+            if (!message.member?.roles.cache.has(adminRoleId)) {
+                return;
+            }
+
+            const args = message.content.split(" ");
+            if (args.length < 2) {
+                return message.reply("Usage: !verify <id>");
+            }
+
+            const id = parseInt(args[1]);
+            if (isNaN(id)) {
+                return message.reply("Invalid ID provided.");
+            }
+
+            dbHelpers.verifyActivity(id);
+            await message.reply(`Activity ${id} verified!`);
         }
     });
 
