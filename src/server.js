@@ -129,8 +129,27 @@ export function startServer(client) {
                 });
             }
 
+            // Config Status for Frontend
+            if (url.pathname === "/api/config") {
+                return new Response(JSON.stringify({
+                    start: process.env.START_DATE,
+                    end: process.env.END_DATE
+                }), {
+                    headers: { "Content-Type": "application/json" }
+                });
+            }
+
             // Static Frontend
             if (url.pathname === "/" || url.pathname === "/index.html") {
+                const start = new Date(process.env.START_DATE);
+                const now = new Date();
+
+                // If detailed logging is needed
+                // console.log("Checking dates:", now, start, now < start);
+
+                if (now < start) {
+                    return new Response(file("public/coming_soon.html"));
+                }
                 return new Response(file("public/index.html"));
             }
 

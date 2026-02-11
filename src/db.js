@@ -82,7 +82,8 @@ export const dbHelpers = {
             // Group by day
             const daily = {};
             activities.forEach(act => {
-                const day = act.date.split('T')[0];
+                // Handle both ISO strings (T) and SQL strings (space) by just taking the first 10 chars (YYYY-MM-DD)
+                const day = act.date ? act.date.substring(0, 10) : 'Unknown';
                 daily[day] = (daily[day] || 0) + act.meters;
             });
 
