@@ -4,68 +4,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rowbot Leaderboard</title>
+    <title>Michigan Tech Rowing Club - Erg-A-Thon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0d1117;
-            --card-bg: #161b22;
-            --text-primary: #f0f6fc;
-            --text-secondary: #8b949e;
-            --accent: #238636;
-            --accent-glow: rgba(35, 134, 54, 0.4);
-            --gradient-start: #1f242d;
-            --gradient-end: #0d1117;
+            --mtu-gold: #FFCB05;
+            --bg: #ffffff;
+            --bg-card: #f8f9fa;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --border: #e0e0e0;
+            --accent: #FFCB05;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
             color: var(--text-primary);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
-            animation: fadeIn 1s ease-out;
-        }
-
-        h1 {
-            font-size: 3rem;
-            margin: 0;
-            background: -webkit-linear-gradient(45deg, #eee, #999);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-        }
-
-        p.subtitle {
-            color: var(--text-secondary);
-            font-size: 1.2rem;
-            margin-top: 0.5rem;
+            padding: 2rem 1rem;
         }
 
         .container {
-            width: 100%;
             max-width: 1000px;
-            display: grid;
-            gap: 1.5rem;
+            margin: 0 auto;
         }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
-            animation: slideUp 0.5s ease-out forwards;
-            opacity: 0;
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Countdown Timer */
+        .countdown-container {
+            background: var(--bg-card);
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            animation: slideDown 0.6s ease-out;
+            animation-delay: 0.2s;
+            animation-fill-mode: both;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .countdown-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .countdown-timer {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .countdown-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .countdown-value {
+            font-size: 3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            transition: transform 0.3s ease;
+        }
+
+        .countdown-value:hover {
+            transform: scale(1.05);
+        }
+
+        .countdown-unit {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        /* Club Progress */
+        .club-progress {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            animation: slideUp 0.6s ease-out;
+            animation-delay: 0.3s;
+            animation-fill-mode: both;
         }
 
         @keyframes slideUp {
@@ -80,148 +159,493 @@
             }
         }
 
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .user-header {
+        .club-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        .user-name {
+        .club-title {
             font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--text-primary);
+            font-weight: 600;
         }
 
-        .user-pledge {
+        .club-stats {
+            display: flex;
+            gap: 2rem;
             font-size: 0.9rem;
             color: var(--text-secondary);
-            background: rgba(255, 255, 255, 0.05);
-            padding: 4px 8px;
-            border-radius: 4px;
         }
 
-        .progress-container {
+        .club-stat span {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
             width: 100%;
-            height: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
+            height: 32px;
+            background: #f0f0f0;
+            border-radius: 4px;
             overflow: hidden;
-            margin-bottom: 0.5rem;
             position: relative;
+            border: 1px solid var(--border);
         }
 
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent), #2ea043);
+            background: var(--accent);
             width: 0%;
-            transition: width 1s ease-in-out;
-            box-shadow: 0 0 10px var(--accent-glow);
+            transition: width 2.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .stats {
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .rower-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .rower-card.over-pledge {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, var(--bg-card), rgba(255, 203, 5, 0.03));
+            animation: fadeInUp 0.5s ease-out, subtleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes subtleGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 rgba(255, 203, 5, 0);
+            }
+
+            50% {
+                box-shadow: 0 0 20px rgba(255, 203, 5, 0.15);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .rower-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .rower-card.over-pledge:hover {
+            box-shadow: 0 4px 12px rgba(255, 203, 5, 0.2);
+        }
+
+        .rower-header {
             display: flex;
             justify-content: space-between;
-            font-size: 0.9rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .rower-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .rower-pledge {
+            background: var(--bg);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            border: 1px solid var(--border);
             color: var(--text-secondary);
         }
 
-        .stat-value {
+        .achievement-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: var(--accent);
             color: var(--text-primary);
-            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 1px solid var(--accent);
+        }
+
+        .rower-progress {
+            margin-bottom: 1rem;
+        }
+
+        .rower-progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .rower-progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .rower-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .rower-stat-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Daily Grid */
+        .daily-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .daily-title {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
         }
 
         .daily-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-            margin-top: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.5rem;
         }
 
         .day-box {
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 4px;
-            padding: 8px;
+            padding: 0.75rem 0.5rem;
             text-align: center;
-            font-size: 0.8rem;
+            transition: all 0.2s ease;
         }
 
         .day-box.active {
-            background: rgba(46, 160, 67, 0.2);
-            border: 1px solid rgba(46, 160, 67, 0.5);
+            background: var(--bg);
+            border-color: var(--accent);
+            border-width: 2px;
+        }
+
+        .day-box.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(255, 203, 5, 0.2);
+        }
+
+        .day-date {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
         }
 
         .day-meters {
-            display: block;
-            margin-top: 2px;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 0.9rem;
             color: var(--text-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .countdown-value {
+                font-size: 2rem;
+            }
+
+            .countdown-timer {
+                gap: 1.5rem;
+            }
+
+            .club-title {
+                font-size: 1.25rem;
+            }
+
+            .daily-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            }
         }
     </style>
 </head>
 
 <body>
+    <div class="container">
+        <header>
+            <h1>Michigan Tech Rowing Club</h1>
+            <p class="subtitle">Erg-A-Thon 2026</p>
+        </header>
 
-    <header>
-        <h1>Concept2 Leaderboard</h1>
-        <p class="subtitle">Weekly Rowing Challenge</p>
-    </header>
+        <!-- Countdown Timer -->
+        <div class="countdown-container">
+            <div class="countdown-label">Event Ends In</div>
+            <div class="countdown-timer" id="countdown">
+                <div class="countdown-item">
+                    <div class="countdown-value" id="days">0</div>
+                    <div class="countdown-unit">Days</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-value" id="hours">0</div>
+                    <div class="countdown-unit">Hours</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-value" id="minutes">0</div>
+                    <div class="countdown-unit">Minutes</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-value" id="seconds">0</div>
+                    <div class="countdown-unit">Seconds</div>
+                </div>
+            </div>
+        </div>
 
-    <div class="container" id="club-stats" style="margin-bottom: 2rem;">
-        <!-- Club Stats will be injected here -->
-    </div>
+        <!-- Club Progress -->
+        <div class="club-progress">
+            <div class="club-header">
+                <div class="club-title">
+                    Team Progress
+                </div>
+                <div class="club-stats">
+                    <div class="club-stat">
+                        Goal: <span id="club-pledge">0</span>m
+                    </div>
+                    <div class="club-stat">
+                        Rowed: <span id="club-total">0</span>m
+                    </div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="club-progress-bar"></div>
+                <div class="progress-text" id="club-progress-text">0%</div>
+            </div>
+        </div>
 
-    <div class="container" id="leaderboard">
-        <!-- Users will be populated here -->
-        <div style="text-align:center; color: #888;">Loading data...</div>
+        <!-- Leaderboard -->
+        <div class="leaderboard" id="leaderboard">
+            <div style="text-align: center; color: var(--text-secondary);">Loading data...</div>
+        </div>
     </div>
 
     <script>
+        // ============================================
+        // CONFIGURATION - Update the date here!
+        // ============================================
+        const EVENT_END_DATE = '2026-03-01T23:59:59'; // Format: YYYY-MM-DDTHH:MM:SS
+
+        // ============================================
+        // API Configuration
+        // ============================================
+        const USE_DUMMY_DATA = false; // Set to false when API is ready
+        const API_ENDPOINT = '/api/leaderboard';
+
+        // ============================================
+        // Dummy Data (matches API structure)
+        // ============================================
+        const DUMMY_DATA = {
+            leaderboard: [
+                {
+                    id: 1,
+                    discord_nickname: "Sarah_M",
+                    pledge: 45000,
+                    totalMeters: 47850,
+                    daily: {
+                        "2026-02-10": 7200,
+                        "2026-02-11": 8400,
+                        "2026-02-12": 6500,
+                        "2026-02-13": 9200,
+                        "2026-02-14": 7850,
+                        "2026-02-15": 8700,
+                        "2026-02-16": 0
+                    }
+                },
+                {
+                    id: 2,
+                    discord_nickname: "Mike_T",
+                    pledge: 45000,
+                    totalMeters: 42300,
+                    daily: {
+                        "2026-02-10": 6800,
+                        "2026-02-11": 7200,
+                        "2026-02-12": 5900,
+                        "2026-02-13": 8100,
+                        "2026-02-14": 6700,
+                        "2026-02-15": 7600,
+                        "2026-02-16": 0
+                    }
+                },
+                {
+                    id: 3,
+                    discord_nickname: "BrysonV",
+                    pledge: 40000,
+                    totalMeters: 38450,
+                    daily: {
+                        "2026-02-10": 5500,
+                        "2026-02-11": 6200,
+                        "2026-02-12": 5800,
+                        "2026-02-13": 7100,
+                        "2026-02-14": 5950,
+                        "2026-02-15": 7900,
+                        "2026-02-16": 0
+                    }
+                },
+                {
+                    id: 4,
+                    discord_nickname: "Emily_R",
+                    pledge: 35000,
+                    totalMeters: 31200,
+                    daily: {
+                        "2026-02-10": 4800,
+                        "2026-02-11": 5100,
+                        "2026-02-12": 4600,
+                        "2026-02-13": 5700,
+                        "2026-02-14": 4900,
+                        "2026-02-15": 6100,
+                        "2026-02-16": 0
+                    }
+                },
+                {
+                    id: 5,
+                    discord_nickname: "Jake_H",
+                    pledge: 30000,
+                    totalMeters: 25800,
+                    daily: {
+                        "2026-02-10": 3900,
+                        "2026-02-11": 4200,
+                        "2026-02-12": 3800,
+                        "2026-02-13": 4600,
+                        "2026-02-14": 4100,
+                        "2026-02-15": 5200,
+                        "2026-02-16": 0
+                    }
+                }
+            ],
+            clubTotalMeters: 185600,
+            clubTotalPledge: 200000,
+            clubDailyTotals: {
+                "2026-02-10": 28200,
+                "2026-02-11": 31100,
+                "2026-02-12": 26600,
+                "2026-02-13": 34700,
+                "2026-02-14": 29500,
+                "2026-02-15": 35500,
+                "2026-02-16": 0
+            }
+        };
+
+        // ============================================
+        // Countdown Timer
+        // ============================================
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const end = new Date(EVENT_END_DATE).getTime();
+            const distance = end - now;
+
+            if (distance < 0) {
+                document.getElementById('countdown').innerHTML = '<div class="countdown-value" style="color: var(--mtu-gold);">Event Complete!</div>';
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('days').textContent = days.toString().padStart(2, '0');
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+        }
+
+        // ============================================
+        // Data Fetching
+        // ============================================
         async function fetchLeaderboard() {
             try {
-                const response = await fetch('/api/leaderboard');
-                const data = await response.json();
-                renderClubStats(data);
-                renderLeaderboard(data.leaderboard);
+                if (USE_DUMMY_DATA) {
+                    return DUMMY_DATA;
+                } else {
+                    const response = await fetch(API_ENDPOINT);
+                    if (!response.ok) throw new Error('API request failed');
+                    return await response.json();
+                }
             } catch (error) {
                 console.error('Error fetching data:', error);
-                document.getElementById('leaderboard').innerHTML = '<div style="text-align:center; color: #f85149;">Failed to load data.</div>';
+                return DUMMY_DATA; // Fallback to dummy data
             }
         }
 
-        function renderClubStats(data) {
-            const container = document.getElementById('club-stats');
-            const { clubTotalMeters, clubTotalPledge, clubDailyTotals } = data;
+        // ============================================
+        // Rendering Functions
+        // ============================================
+        function renderClubProgress(data) {
+            const { clubTotalMeters, clubTotalPledge } = data;
+            const percentage = Math.min((clubTotalMeters / clubTotalPledge) * 100, 100);
 
-            const percent = clubTotalPledge > 0 ? Math.min((clubTotalMeters / clubTotalPledge) * 100, 100) : 0;
+            document.getElementById('club-pledge').textContent = clubTotalPledge.toLocaleString();
+            document.getElementById('club-total').textContent = clubTotalMeters.toLocaleString();
+            document.getElementById('club-progress-text').textContent = `${percentage.toFixed(1)}%`;
 
-            container.innerHTML = `
-                <div class="card" style="opacity: 1; transform: none; background: rgba(35, 134, 54, 0.1); border-color: rgba(35, 134, 54, 0.3);">
-                    <div class="user-header">
-                        <span class="user-name" style="color: #3fb950; font-size: 1.8rem;">🏸 Club Total</span>
-                        <span class="user-pledge" style="background: rgba(35, 134, 54, 0.2); color: #fff;">Goal: ${clubTotalPledge.toLocaleString()}m</span>
-                    </div>
-                     <div class="progress-container" style="height: 24px;">
-                        <div class="progress-bar" style="width: ${percent}%; background: linear-gradient(90deg, #2ea043, #3fb950);"></div>
-                    </div>
-                    <div class="stats" style="font-size: 1.1rem; margin-top: 0.5rem;">
-                        <span>Total Rowed: <span class="stat-value" style="color: #fff;">${clubTotalMeters.toLocaleString()}m</span></span>
-                        <span style="color: #3fb950; font-weight: bold;">${percent.toFixed(1)}% Complete</span>
-                    </div>
-                     <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-                        <h3 style="margin: 0 0 1rem 0; font-size: 1rem; color: var(--text-secondary);">Club Daily Activity</h3>
-                        <div class="daily-grid">
-                            ${generateDailyGrid(clubDailyTotals)}
-                        </div>
-                    </div>
-                </div>
-            `;
+            // Animate progress bar with delay for smooth appearance
+            setTimeout(() => {
+                document.getElementById('club-progress-bar').style.width = `${percentage}%`;
+            }, 500);
         }
 
         function renderLeaderboard(users) {
@@ -229,61 +653,112 @@
             container.innerHTML = '';
 
             users.forEach((user, index) => {
-                const pledge = user.pledge || 0;
-                const percent = pledge > 0 ? Math.min((user.totalMeters / pledge) * 100, 100) : 0;
+                const percentage = user.pledge > 0
+                    ? Math.min((user.totalMeters / user.pledge) * 100, 100)
+                    : 0;
 
-                // Delay animation based on index
-                const delay = index * 100;
+                const isOverPledge = user.totalMeters >= user.pledge && user.pledge > 0;
+                const metersOver = isOverPledge ? user.totalMeters - user.pledge : 0;
 
                 const card = document.createElement('div');
-                card.className = 'card';
-                card.style.animationDelay = `${delay}ms`;
+                card.className = isOverPledge ? 'rower-card over-pledge' : 'rower-card';
+                card.style.animationDelay = `${0.4 + (index * 0.1)}s`;
+
+                const pledgeDisplay = isOverPledge
+                    ? `<div class="achievement-badge">+${metersOver.toLocaleString()}m over goal!</div>`
+                    : `<div class="rower-pledge">Goal: ${user.pledge.toLocaleString()}m</div>`;
 
                 card.innerHTML = `
-                    <div class="user-header">
-                        <span class="user-name">${index + 1}. ${user.discord_nickname || user.discord_username || 'Unknown'}</span>
-                        <span class="user-pledge">Goal: ${pledge.toLocaleString()}m</span>
+                    <div class="rower-header">
+                        <div class="rower-name">
+                            ${user.discord_nickname || 'Unknown Rower'}
+                        </div>
+                        ${pledgeDisplay}
                     </div>
                     
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: ${percent}%"></div>
+                    <div class="rower-progress">
+                        <div class="rower-progress-bar">
+                            <div class="rower-progress-fill" style="width: ${percentage}%">
+                                ${percentage > 10 ? percentage.toFixed(1) + '%' : ''}
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="stats">
-                        <span>Total: <span class="stat-value">${user.totalMeters.toLocaleString()}m</span></span>
-                        <span>${percent.toFixed(1)}% Complete</span>
+                    <div class="rower-stats">
+                        <div>
+                            Total: <span class="rower-stat-value">${user.totalMeters.toLocaleString()}m</span>
+                        </div>
+                        <div>
+                            ${isOverPledge ? `<strong style="color: var(--accent);">${percentage.toFixed(1)}% Complete!</strong>` : `${percentage.toFixed(1)}% Complete`}
+                        </div>
                     </div>
 
-                    <div class="daily-grid">
-                        ${generateDailyGrid(user.daily)}
+                    <div class="daily-section">
+                        <div class="daily-title">Daily Meters</div>
+                        <div class="daily-grid">
+                            ${generateDailyGrid(user.daily)}
+                        </div>
                     </div>
                 `;
+
                 container.appendChild(card);
+
+                // Animate progress bar after card animation with proper delay
+                setTimeout(() => {
+                    const progressBar = card.querySelector('.rower-progress-fill');
+                    progressBar.style.width = `${percentage}%`;
+                }, 400 + (index * 100) + 300);
             });
         }
 
         function generateDailyGrid(dailyData) {
-            // Assume 7 days roughly. We could improve to show dates.
-            // For now, just showing keys in order if available, or just mapping the object
-            // To make it look like a week, let's map keys sorted.
-            const keys = Object.keys(dailyData).sort();
-            if (keys.length === 0) return '<div class="day-box">No Activity</div>';
+            const sortedDates = Object.keys(dailyData).sort();
 
-            return keys.map(date => {
+            if (sortedDates.length === 0) {
+                return '<div class="day-box">No activity yet</div>';
+            }
+
+            return sortedDates.map(date => {
                 const meters = dailyData[date];
+                const dateObj = new Date(date);
+                const formatted = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
                 return `
                     <div class="day-box ${meters > 0 ? 'active' : ''}">
-                         ${date.slice(5)}<br>
-                         <span class="day-meters">${meters > 1000 ? (meters / 1000).toFixed(1) + 'k' : meters}</span>
+                        <div class="day-date">${formatted}</div>
+                        <div class="day-meters">
+                            ${meters > 1000 ? (meters / 1000).toFixed(1) + 'k' : meters}
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Fetch on load
-        fetchLeaderboard();
-        // Refresh every minute
-        setInterval(fetchLeaderboard, 60000);
+        // ============================================
+        // Initialization
+        // ============================================
+        async function init() {
+            // Update countdown immediately and every second
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+
+            // Load and render leaderboard data
+            const data = await fetchLeaderboard();
+            renderClubProgress(data);
+            renderLeaderboard(data.leaderboard);
+
+            // Refresh data every minute (when using real API)
+            if (!USE_DUMMY_DATA) {
+                setInterval(async () => {
+                    const newData = await fetchLeaderboard();
+                    renderClubProgress(newData);
+                    renderLeaderboard(newData.leaderboard);
+                }, 60000);
+            }
+        }
+
+        // Start the app
+        init();
     </script>
 </body>
 
