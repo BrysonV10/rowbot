@@ -146,5 +146,13 @@ export const dbHelpers = {
             GROUP BY u.id
             ORDER BY total_meters DESC
         `).all();
+    },
+    getUnverifiedActivityByMeters: (userId, meters) => {
+        return db.query(`
+            SELECT * FROM activities 
+            WHERE user_id = ? AND meters = ? AND (verified = 0 OR verified IS NULL)
+            ORDER BY date DESC 
+            LIMIT 1
+        `).get(userId, meters);
     }
 };

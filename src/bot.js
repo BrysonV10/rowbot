@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, Partials, ActionRowBuilder, ButtonBuilder, B
 import { dbHelpers } from "./db.js";
 import table from "text-table";
 import axios from "axios";
+import { handleImageVerification } from "./verifyImage.js";
 
 export async function startBot() {
     const client = new Client({
@@ -22,6 +23,14 @@ export async function startBot() {
         if (message.author.bot) return;
 
         if (message.channel.type === ChannelType.DM) {
+            // First try to handle as an image verification
+            try {
+                const handled = await handleImageVerification(message);
+                if (handled) return; // Stop processing if the verification service took over
+            } catch (err) {
+                console.error("Error in handleImageVerification:", err);
+            }
+
             try {
                 const webhookClient = new WebhookClient({ url: process.env.DISCORD_DM_WEBHOOK_URL });
                 await webhookClient.send({
