@@ -132,7 +132,7 @@ export function startServer(client) {
             // Config Status for Frontend
             if (url.pathname === "/api/config") {
                 return new Response(JSON.stringify({
-                    start: process.env.START_DATE,
+                    start: `${process.env.START_DATE}T00:00:00-05:00`,
                     end: process.env.END_DATE
                 }), {
                     headers: { "Content-Type": "application/json" }
