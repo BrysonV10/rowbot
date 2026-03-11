@@ -20,11 +20,11 @@ This command exposes http://localhost:3000.
 This project was created using `bun init` in bun v1.3.6. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
 
 ## Commands Within Discord
-Anyone:
-`!pledge <meters>` - records a pledge from the user
-`!row-setup` - sends the button for whatever channel you choose to put it in
-Admin Only (as defined in the .env file):
-`!sync-meters` - manually syncs all meters for all users, requires a admin role specified in the .env file
-`!export-csv` - exports all user totals as a CSV file
-`!unverified` - shows all unverified activites in a table
-`!verify <ID>` - verifies an activity manually with an ID as given
+Anyone:    
+`!pledge <meters>` - records a pledge from the user    
+`!row-setup` - sends the button for whatever channel you choose to put it in    
+Admin Only (as defined in the .env file):    
+`!sync-meters` - manually syncs all meters for all users, requires a admin role specified in the .env file   
+`!export-csv` - exports all user totals as a CSV file    
+`!unverified` - shows all unverified activites in a table    
+`!verify <ID>` - verifies an activity manually with an ID as given     
