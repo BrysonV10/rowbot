@@ -720,7 +720,8 @@
 
             return sortedDates.map(date => {
                 const meters = dailyData[date];
-                const dateObj = new Date(date);
+                const [year, month, day] = date.split('-');
+                const dateObj = new Date(year, month - 1, day);
                 const formatted = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
                 return `
