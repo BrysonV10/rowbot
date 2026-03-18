@@ -21,6 +21,8 @@ export async function handleImageVerification(message) {
             return true;
         }
 
+        await message.channel.sendTyping();
+
         // 2. Fetch the image data
         const response = await axios.get(attachment.url, { responseType: 'arraybuffer' });
         const imageBuffer = Buffer.from(response.data);
