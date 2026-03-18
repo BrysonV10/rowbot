@@ -221,7 +221,7 @@ async function syncAllUsers() {
                             });
                             if (retryResponse.data && retryResponse.data.data) {
                                 for (const result of retryResponse.data.data) {
-                                    dbHelpers.addActivity(user.id, result.id, result.distance, result.date, result.type);
+                                    dbHelpers.addActivity(user.id, result.id, result.distance, result.date, result.type, result.verified);
                                 }
                             }
                             count++;

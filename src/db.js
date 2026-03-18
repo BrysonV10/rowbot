@@ -59,7 +59,7 @@ export const dbHelpers = {
         return db.query("SELECT * FROM users").all();
     },
     addActivity: (userId, logId, meters, date, type, verified) => {
-        let q = db.query("INSERT INTO activities (user_id, concept2_log_id, meters, date, type, verified) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT(concept2_log_id) DO UPDATE SET meters=excluded.meters, verified=excluded.verified");
+        let q = db.query("INSERT INTO activities (user_id, concept2_log_id, meters, date, type, verified) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT(concept2_log_id) DO UPDATE SET meters=excluded.meters, verified=CASE WHEN activities.verified = 1 THEN 1 ELSE excluded.verified END");
         return q.run(userId, logId, meters, date, type, verified);
     },
     deleteActivity: (logId) => {
