@@ -178,7 +178,7 @@ export async function startBot() {
                 return message.reply("Invalid ID provided.");
             }
 
-            dbHelpers.verifyActivity(id);
+            dbHelpers.verifyActivity(id, 'man');
             await message.reply(`Activity ${id} verified!`);
         }
 
@@ -202,13 +202,13 @@ export async function startBot() {
             }
 
             const data = [
-                ['ID', 'User', 'Meters', 'Date', 'Type', 'Verified'],
+                ['ID', 'User', 'Meters', 'Date', 'Method', 'Verified'],
                 ...activities.map(a => [
                     a.id,
                     a.discord_nickname || a.discord_username,
                     a.meters,
                     a.date.split('T')[0],
-                    a.type,
+                    a.verification_method,
                     a.verified ? 'Yes' : 'No'
                 ])
             ];
@@ -395,7 +395,7 @@ async function syncAllUsers() {
                 if (response.data && response.data.data) {
                     console.log(response.data.data);
                     for (const result of response.data.data) {
-                        dbHelpers.addActivity(user.id, result.id, result.distance, result.date, result.type, result.verified);
+                        dbHelpers.addActivity(user.id, result.id, result.distance, result.date, result.type, result.verified, result.verified ? 'auto' : 'none');
                     }
                 }
                 count++;
@@ -411,7 +411,7 @@ async function syncAllUsers() {
                             });
                             if (retryResponse.data && retryResponse.data.data) {
                                 for (const result of retryResponse.data.data) {
-                                    dbHelpers.addActivity(user.id, result.id, result.distance, result.date, result.type, result.verified);
+                                    dbHelpers.addActivity(user.id, result.id, result.distance, result.date, result.type, result.verified, result.verified ? 'auto' : 'none');
                                 }
                             }
                             count++;

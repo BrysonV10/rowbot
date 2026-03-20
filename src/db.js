@@ -27,6 +27,7 @@ export function initDB() {
             date TEXT,
             type TEXT,
             verified BOOLEAN DEFAULT 0,
+            verification_method TEXT DEFAULT 'none',
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
     `);
@@ -58,9 +59,9 @@ export const dbHelpers = {
     getAllUsers: () => {
         return db.query("SELECT * FROM users").all();
     },
-    addActivity: (userId, logId, meters, date, type, verified) => {
-        let q = db.query("INSERT INTO activities (user_id, concept2_log_id, meters, date, type, verified) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT(concept2_log_id) DO UPDATE SET meters=excluded.meters, verified=CASE WHEN activities.verified = 1 THEN 1 ELSE excluded.verified END");
-        return q.run(userId, logId, meters, date, type, verified);
+    addActivity: (userId, logId, meters, date, type, verified, verificationMethod = 'none') => {
+        let q = db.query("INSERT INTO activities (user_id, concept2_log_id, meters, date, type, verified, verification_method) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) ON CONFLICT(concept2_log_id) DO UPDATE SET meters=excluded.meters, verified=CASE WHEN activities.verified = 1 THEN 1 ELSE excluded.verified END, verification_method=CASE WHEN activities.verified = 1 THEN activities.verification_method ELSE excluded.verification_method END");
+        return q.run(userId, logId, meters, date, type, verified, verificationMethod);
     },
     deleteActivity: (logId) => {
         return db.run("DELETE FROM activities WHERE concept2_log_id = ?", [logId]);
@@ -116,8 +117,8 @@ export const dbHelpers = {
             clubDailyTotals
         };
     },
-    verifyActivity: (id) => {
-        return db.run("UPDATE activities SET verified = 1 WHERE id = ?", [id]);
+    verifyActivity: (id, method = 'man') => {
+        return db.run("UPDATE activities SET verified = 1, verification_method = ? WHERE id = ?", [method, id]);
     },
     getUnverifiedActivities: () => {
         return db.query(`
@@ -167,7 +168,8 @@ export const dbHelpers = {
                 a.meters, 
                 a.date, 
                 a.type,
-                a.verified
+                a.verified,
+                a.verification_method
             FROM activities a
             JOIN users u ON a.user_id = u.id
             WHERE u.discord_username = ? COLLATE NOCASE

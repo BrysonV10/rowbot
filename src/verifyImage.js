@@ -67,7 +67,7 @@ Return nothing but a boolean representing if the image is a Concept2 PM5 separat
         }
 
         // 6. Verify and reply
-        dbHelpers.verifyActivity(activity.id);
+        dbHelpers.verifyActivity(activity.id, 'dm');
         await message.reply(`Success! Successfully verified your activity of ${meters} meters.`);
         return true;
 

@@ -105,7 +105,7 @@ export function startServer(client) {
                         console.warn(`Received webhook for activity outside of date range: ${date}`);
                         return new Response("Activity outside of date range", { status: 200 });
                     }
-                    dbHelpers.addActivity(user.id, id, distance, date, body.result.type, body.result.verified);
+                    dbHelpers.addActivity(user.id, id, distance, date, body.result.type, body.result.verified, body.result.verified ? 'auto' : 'none');
 
                     // if we recieve a webhook indicating a user deleted an activity 
                 } else if (body.type == "result-deleted") {
