@@ -243,7 +243,7 @@ export async function startBot() {
 
                 const pad = (n) => n.toString().padStart(2, '0');
                 const now = new Date();
-                const dateStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+                const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
                 await interaction.deferReply({ flags: [64] });
 
@@ -251,7 +251,8 @@ export async function startBot() {
                     distance: distance,
                     time: timeInTenths,
                     date: dateStr,
-                    type: "rower"
+                    type: "rower",
+                    weight_class: "H"
                 };
 
                 const postActivity = async (token) => {
@@ -262,7 +263,7 @@ export async function startBot() {
 
                 try {
                     let response = await postActivity(user.concept2_token);
-                    
+
                     if (response.data && response.data.data) {
                         const result = response.data.data;
                         dbHelpers.addActivity(user.id, result.id, result.distance, result.date, result.type, 0);
@@ -270,20 +271,20 @@ export async function startBot() {
                     }
                 } catch (err) {
                     if (err.response?.status === 401) {
-                         const newToken = await refreshUserToken(user);
-                         if (newToken) {
-                             try {
-                                 const retryResponse = await postActivity(newToken);
-                                 if (retryResponse.data && retryResponse.data.data) {
-                                     const result = retryResponse.data.data;
-                                     dbHelpers.addActivity(user.id, result.id, result.distance, result.date, result.type, 0);
-                                     await interaction.editReply({ content: `Activity has been logged! Please go to DMs and submit photo proof of the activity.` });
-                                     return;
-                                 }
-                             } catch (retryErr) {
-                                 console.error("Retry posting activity failed:", retryErr.response?.data || retryErr.message);
-                             }
-                         }
+                        const newToken = await refreshUserToken(user);
+                        if (newToken) {
+                            try {
+                                const retryResponse = await postActivity(newToken);
+                                if (retryResponse.data && retryResponse.data.data) {
+                                    const result = retryResponse.data.data;
+                                    dbHelpers.addActivity(user.id, result.id, result.distance, result.date, result.type, 0);
+                                    await interaction.editReply({ content: `Activity has been logged! Please go to DMs and submit photo proof of the activity.` });
+                                    return;
+                                }
+                            } catch (retryErr) {
+                                console.error("Retry posting activity failed:", retryErr.response?.data || retryErr.message);
+                            }
+                        }
                     }
                     console.error("Failed to post activity:", err.response?.data || err.message);
                     await interaction.editReply({ content: "Failed to log activity to Concept2. Please try again later." });
