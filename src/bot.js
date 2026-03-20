@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, ChannelType, WebhookClient, AttachmentBuilder } from "discord.js";
+import { Client, GatewayIntentBits, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, ChannelType, WebhookClient, AttachmentBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { dbHelpers } from "./db.js";
 import table from "text-table";
 import axios from "axios";
@@ -52,9 +52,13 @@ export async function startBot() {
                         .setCustomId('connect_concept2')
                         .setLabel('Connect Concept2')
                         .setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder()
+                        .setCustomId('manual_log')
+                        .setLabel('Manual Logging')
+                        .setStyle(ButtonStyle.Secondary)
                 );
 
-            await message.reply({ content: "Click below to connect your Concept2 account!", components: [row] });
+            await message.reply({ content: "Click below to connect your Concept2 account or manually log your activity!", components: [row] });
         }
 
         if (message.content.startsWith("!pledge")) {
@@ -164,22 +168,126 @@ export async function startBot() {
     });
 
     client.on("interactionCreate", async (interaction) => {
-        if (!interaction.isButton()) return;
+        if (!interaction.isButton() && !interaction.isModalSubmit()) return;
 
-        if (interaction.customId === 'connect_concept2') {
-            const clientId = process.env.CONCEPT2_CLIENT_ID;
-            const redirectUri = encodeURIComponent(process.env.CONCEPT2_REDIRECT_URI);
-            const state = interaction.user.id;
-            dbHelpers.createUser(interaction.user.id, interaction.user.username, interaction.user.displayName || interaction.user.username);
-            const scope = "user:read,results:read";
+        if (interaction.isButton()) {
+            if (interaction.customId === 'connect_concept2') {
+                const clientId = process.env.CONCEPT2_CLIENT_ID;
+                const redirectUri = encodeURIComponent(process.env.CONCEPT2_REDIRECT_URI);
+                const state = interaction.user.id;
+                dbHelpers.createUser(interaction.user.id, interaction.user.username, interaction.user.displayName || interaction.user.username);
+                const scope = "user:read,results:write";
 
-            const authUrl = `https://log.concept2.com/oauth/authorize?client_id=${clientId}&scope=${scope}&response_type=code&redirect_uri=${redirectUri}&state=${state}`;
+                const authUrl = `https://log.concept2.com/oauth/authorize?client_id=${clientId}&scope=${scope}&response_type=code&redirect_uri=${redirectUri}&state=${state}`;
 
-            try {
-                await interaction.user.send(`Click this link to authorize Concept2: ${authUrl}. \n Please do not share this link with others.`);
-                await interaction.reply({ content: "Check your DMs!", flags: [64] });
-            } catch (error) {
-                await interaction.reply({ content: "I couldn't DM you. Please enable DMs.", flags: [64] });
+                try {
+                    await interaction.user.send(`Click this link to authorize Concept2: ${authUrl}. \n Please do not share this link with others.`);
+                    await interaction.reply({ content: "Check your DMs!", flags: [64] });
+                } catch (error) {
+                    await interaction.reply({ content: "I couldn't DM you. Please enable DMs.", flags: [64] });
+                }
+            } else if (interaction.customId === 'manual_log') {
+                const modal = new ModalBuilder()
+                    .setCustomId('manual_log_modal')
+                    .setTitle('Log Workout');
+
+                const distanceInput = new TextInputBuilder()
+                    .setCustomId('distanceInput')
+                    .setLabel("Distance (meters)")
+                    .setStyle(TextInputStyle.Short)
+                    .setRequired(true);
+
+                const timeInput = new TextInputBuilder()
+                    .setCustomId('timeInput')
+                    .setLabel("Time (MM:SS or MM:SS.0)")
+                    .setPlaceholder("e.g. 7:30.5")
+                    .setStyle(TextInputStyle.Short)
+                    .setRequired(true);
+
+                const firstActionRow = new ActionRowBuilder().addComponents(distanceInput);
+                const secondActionRow = new ActionRowBuilder().addComponents(timeInput);
+
+                modal.addComponents(firstActionRow, secondActionRow);
+
+                await interaction.showModal(modal);
+            }
+        } else if (interaction.isModalSubmit()) {
+            if (interaction.customId === 'manual_log_modal') {
+                const distanceStr = interaction.fields.getTextInputValue('distanceInput');
+                const timeStr = interaction.fields.getTextInputValue('timeInput');
+
+                const user = dbHelpers.getUser(interaction.user.id);
+                if (!user || !user.concept2_token) {
+                    return interaction.reply({ content: "You need to connect your Concept2 account first using !row-setup.", flags: [64] });
+                }
+
+                const distance = parseInt(distanceStr);
+                if (isNaN(distance) || distance <= 0) {
+                    return interaction.reply({ content: "Invalid distance format. Please enter a valid number.", flags: [64] });
+                }
+
+                const timeParts = timeStr.split(':');
+                if (timeParts.length !== 2) {
+                    return interaction.reply({ content: "Invalid time format. Please use MM:SS or MM:SS.0", flags: [64] });
+                }
+                const mins = parseInt(timeParts[0]);
+                const secsParts = timeParts[1].split('.');
+                const secs = parseInt(secsParts[0]);
+                const tenths = secsParts.length > 1 ? parseInt(secsParts[1].substring(0, 1)) : 0;
+
+                if (isNaN(mins) || isNaN(secs) || isNaN(tenths)) {
+                    return interaction.reply({ content: "Invalid time format.", flags: [64] });
+                }
+
+                const timeInTenths = (mins * 60 * 10) + (secs * 10) + tenths;
+
+                const pad = (n) => n.toString().padStart(2, '0');
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+                await interaction.deferReply({ flags: [64] });
+
+                const payload = {
+                    distance: distance,
+                    time: timeInTenths,
+                    date: dateStr,
+                    type: "rower"
+                };
+
+                const postActivity = async (token) => {
+                    return axios.post('https://log.concept2.com/api/users/me/results', payload, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                };
+
+                try {
+                    let response = await postActivity(user.concept2_token);
+                    
+                    if (response.data && response.data.data) {
+                        const result = response.data.data;
+                        dbHelpers.addActivity(user.id, result.id, result.distance, result.date, result.type, 0);
+                        await interaction.editReply({ content: `Activity has been logged! Please go to DMs and submit photo proof of the activity.` });
+                    }
+                } catch (err) {
+                    if (err.response?.status === 401) {
+                         const newToken = await refreshUserToken(user);
+                         if (newToken) {
+                             try {
+                                 const retryResponse = await postActivity(newToken);
+                                 if (retryResponse.data && retryResponse.data.data) {
+                                     const result = retryResponse.data.data;
+                                     dbHelpers.addActivity(user.id, result.id, result.distance, result.date, result.type, 0);
+                                     await interaction.editReply({ content: `Activity has been logged! Please go to DMs and submit photo proof of the activity.` });
+                                     return;
+                                 }
+                             } catch (retryErr) {
+                                 console.error("Retry posting activity failed:", retryErr.response?.data || retryErr.message);
+                             }
+                         }
+                    }
+                    console.error("Failed to post activity:", err.response?.data || err.message);
+                    await interaction.editReply({ content: "Failed to log activity to Concept2. Please try again later." });
+                }
             }
         }
     });
@@ -244,7 +352,7 @@ async function refreshUserToken(user) {
             client_id: process.env.CONCEPT2_CLIENT_ID,
             client_secret: process.env.CONCEPT2_CLIENT_SECRET,
             grant_type: "refresh_token",
-            scope: "user:read,results:read",
+            scope: "user:read,results:write",
             refresh_token: user.concept2_refresh_token
         }));
 
