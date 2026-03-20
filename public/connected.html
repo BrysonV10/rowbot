@@ -137,7 +137,14 @@
         <h1>Successfully Connected</h1>
         <p>Your Concept2 account has been successfully linked to Rowbot.</p>
         <p style="font-size: 0.875rem; opacity: 0.8;">You can safely close this window.</p>
-        <a href="javascript:window.close()" class="btn">Close Window</a>
+        <a href="javascript:window.close()" class="btn" id="closeBtn">Close Window</a>
     </div>
+
+    <script>
+        // Many mobile browsers ignore window.close(), so hide the button for them
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            document.getElementById('closeBtn').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
