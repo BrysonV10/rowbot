@@ -154,5 +154,24 @@ export const dbHelpers = {
             ORDER BY date DESC 
             LIMIT 1
         `).get(userId, meters);
+    },
+    deleteActivityById: (id) => {
+        return db.run("DELETE FROM activities WHERE id = ?", [id]);
+    },
+    getActivitiesByUsername: (username) => {
+        return db.query(`
+            SELECT 
+                a.id, 
+                u.discord_username, 
+                u.discord_nickname, 
+                a.meters, 
+                a.date, 
+                a.type,
+                a.verified
+            FROM activities a
+            JOIN users u ON a.user_id = u.id
+            WHERE u.discord_username = ? COLLATE NOCASE
+            ORDER BY a.date DESC
+        `).all(username);
     }
 };

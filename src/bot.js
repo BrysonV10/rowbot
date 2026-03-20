@@ -45,6 +45,22 @@ export async function startBot() {
             return;
         }
 
+        if (message.content.startsWith("!help")) {
+            const helpMessage = `**Available Commands:**
+\`!row-setup\` - Connect your Concept2 account or manually log your activity.
+\`!pledge <meters>\` - Pledge a goal for total meters.
+\`!help\` - Show this help message.
+
+**Manager Only Commands:**
+\`!sync-meters\` - Synchronize activities for all connected Concept2 accounts.
+\`!export-csv\` - Export a CSV file with user totals and pledges.
+\`!unverified\` - View all unverified manual activities.
+\`!verify <id>\` - Verify an activity by ID.
+\`!activities <username>\` - View all activities for a specific discord user.
+\`!delete <id>\` - Delete an activity by ID.`;
+            return message.reply(helpMessage);
+        }
+
         if (message.content.startsWith("!row-setup")) {
             const row = new ActionRowBuilder()
                 .addComponents(
@@ -164,6 +180,71 @@ export async function startBot() {
 
             dbHelpers.verifyActivity(id);
             await message.reply(`Activity ${id} verified!`);
+        }
+
+        if (message.content.startsWith("!activities")) {
+            const adminRoleId = process.env.ADMIN_ROLE_ID;
+            if (!message.member?.roles.cache.has(adminRoleId)) {
+                return;
+            }
+
+            const args = message.content.split(" ");
+            if (args.length < 2) {
+                return message.reply("Usage: !activities <username>");
+            }
+
+            const username = args[1];
+            const activities = dbHelpers.getActivitiesByUsername(username);
+
+            if (activities.length === 0) {
+                await message.reply(`No activities found for user ${username}.`);
+                return;
+            }
+
+            const data = [
+                ['ID', 'User', 'Meters', 'Date', 'Type', 'Verified'],
+                ...activities.map(a => [
+                    a.id,
+                    a.discord_nickname || a.discord_username,
+                    a.meters,
+                    a.date.split('T')[0],
+                    a.type,
+                    a.verified ? 'Yes' : 'No'
+                ])
+            ];
+
+            const output = table(data);
+            if (output.length > 1990) {
+                await message.reply("Too many activities to display at once.");
+                return;
+            }
+
+            await message.reply(`\`\`\`\n${output}\n\`\`\``);
+        }
+
+        if (message.content.startsWith("!delete")) {
+            const adminRoleId = process.env.ADMIN_ROLE_ID;
+            if (!message.member?.roles.cache.has(adminRoleId)) {
+                return;
+            }
+
+            const args = message.content.split(" ");
+            if (args.length < 2) {
+                return message.reply("Usage: !delete <id>");
+            }
+
+            const id = parseInt(args[1]);
+            if (isNaN(id)) {
+                return message.reply("Invalid ID provided.");
+            }
+
+            try {
+                dbHelpers.deleteActivityById(id);
+                await message.reply(`Activity ${id} deleted successfully.`);
+            } catch (err) {
+                console.error("Error deleting activity:", err);
+                await message.reply("Failed to delete the activity.");
+            }
         }
     });
 
