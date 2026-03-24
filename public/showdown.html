@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erg-A-Thon Showdown</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #ef4444;
+            /* intense red */
+            --accent-glow: rgba(239, 68, 68, 0.4);
+            --gold: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .disclaimer {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.8;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+        }
+
+        .showdown-list {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        .showdown-card {
+            background: linear-gradient(145deg, var(--bg-card), #111827);
+            border-radius: 12px;
+            padding: 2.5rem;
+            padding-bottom: 3.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .showdown-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(239, 68, 68, 0.1) 0%, transparent 60%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .showdown-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            .showdown-content {
+                flex-direction: column;
+            }
+
+            .vs {
+                transform: rotate(90deg);
+                margin: 1rem 0;
+            }
+        }
+
+        .competitor {
+            flex: 1;
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease, border-color 0.3s;
+            width: 100%;
+        }
+
+        .competitor:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .competitor.winner {
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+            background: linear-gradient(to bottom, rgba(245, 158, 11, 0.05), rgba(0, 0, 0, 0.2));
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% {
+                border-color: rgba(245, 158, 11, 0.2);
+            }
+
+            50% {
+                border-color: rgba(245, 158, 11, 0.5);
+            }
+
+            100% {
+                border-color: rgba(245, 158, 11, 0.2);
+            }
+        }
+
+        .name {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .winner .name {
+            color: var(--gold);
+            text-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .stat-group {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 2.75rem;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .meters .stat-value {
+            color: #fff;
+        }
+
+        .goal {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .showdown-progress-container {
+            display: flex;
+            width: 100%;
+            height: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .progress-bar-half {
+            flex: 1;
+            position: relative;
+            height: 100%;
+        }
+
+        .progress-bar-half.left {
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar-half.right {
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background: var(--accent);
+            width: 0%;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .progress-fill.left {
+            left: 0;
+        }
+
+        .progress-fill.right {
+            right: 0;
+        }
+
+        .vs {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--accent);
+            text-shadow: 0 0 30px var(--accent-glow);
+            font-style: italic;
+            animation: heartbeat 1.5s infinite;
+            padding: 0 1rem;
+        }
+
+        @keyframes heartbeat {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(1.1);
+            }
+
+            50% {
+                transform: scale(1);
+            }
+
+            75% {
+                transform: scale(1.1);
+            }
+        }
+
+        .back-link {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .loading,
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 4rem;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <a href="/" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Back to Event
+    </a>
+
+    <div class="container">
+        <header>
+            <h1>Showdown</h1>
+            <div class="disclaimer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="display:inline; vertical-align:middle; margin-right:4px;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                Note: Showdowns are just for fun! The individuals involved are participating in friendly competition.
+            </div>
+        </header>
+
+        <div class="showdown-list" id="showdown-container">
+            <div class="loading">Loading showdown intensity...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('showdown-container');
+
+            try {
+                const response = await fetch('/api/showdowns');
+                if (!response.ok) throw new Error('Failed to fetch showdowns');
+                const showdowns = await response.json();
+
+                if (!showdowns || showdowns.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No active showdowns. Call someone out to start a showdown!</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                showdowns.forEach((showdown, index) => {
+                    const u1 = showdown.user1;
+                    const u2 = showdown.user2;
+
+                    const u1Meters = u1.totalMeters || 0;
+                    const u2Meters = u2.totalMeters || 0;
+
+                    const u1Winner = u1Meters > u2Meters;
+                    const u2Winner = u2Meters > u1Meters;
+
+                    const u1Pct = u1.pledge > 0 ? Math.min((u1Meters / u1.pledge) * 100, 100) : 0;
+                    const u2Pct = u2.pledge > 0 ? Math.min((u2Meters / u2.pledge) * 100, 100) : 0;
+
+                    const card = document.createElement('div');
+                    card.className = 'showdown-card';
+                    card.style.animationDelay = `${index * 0.2}s`;
+
+                    card.innerHTML = `
+                        <div class="showdown-content">
+                            <!-- User 1 -->
+                            <div class="competitor ${u1Winner ? 'winner' : ''}">
+                                <div class="name">${u1.discord_nickname || 'Unknown'}</div>
+                                
+                                <div class="stat-group meters">
+                                    <div class="stat-label">Total Meters</div>
+                                    <div class="stat-value">${u1Meters.toLocaleString()}</div>
+                                    <div class="goal">Goal: ${u1.pledge ? u1.pledge.toLocaleString() : '0'}m</div>
+                                </div>
+                            </div>
+                            
+                            <div class="vs">VS</div>
+                            
+                            <!-- User 2 -->
+                            <div class="competitor ${u2Winner ? 'winner' : ''}">
+                                <div class="name">${u2.discord_nickname || 'Unknown'}</div>
+                                
+                                <div class="stat-group meters">
+                                    <div class="stat-label">Total Meters</div>
+                                    <div class="stat-value">${u2Meters.toLocaleString()}</div>
+                                    <div class="goal">Goal: ${u2.pledge ? u2.pledge.toLocaleString() : '0'}m</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="showdown-progress-container">
+                            <div class="progress-bar-half left">
+                                <div class="progress-fill left" style="width: 0%" data-target="${u1Pct}"></div>
+                            </div>
+                            <div class="progress-bar-half right">
+                                <div class="progress-fill right" style="width: 0%" data-target="${u2Pct}"></div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+
+                    // Animate progress bars after card is visible
+                    setTimeout(() => {
+                        const fills = card.querySelectorAll('.progress-fill');
+                        fills.forEach(fill => {
+                            fill.style.width = fill.getAttribute('data-target') + '%';
+                        });
+                    }, 100 + (index * 200));
+                });
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div class="empty-state" style="color: var(--accent);">Failed to load showdowns. Server error.</div>';
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -129,6 +129,16 @@ export function startServer(client) {
                 });
             }
 
+            // API Showdowns
+            if (url.pathname === "/api/showdowns") {
+                const start = process.env.START_DATE;
+                const end = process.env.END_DATE;
+                const data = dbHelpers.getShowdownsData(start, end);
+                return new Response(JSON.stringify(data), {
+                    headers: { "Content-Type": "application/json" }
+                });
+            }
+
             // Config Status for Frontend
             if (url.pathname === "/api/config") {
                 return new Response(JSON.stringify({
@@ -137,6 +147,11 @@ export function startServer(client) {
                 }), {
                     headers: { "Content-Type": "application/json" }
                 });
+            }
+
+            // Showdown Page
+            if (url.pathname === "/showdown" || url.pathname === "/showdown.html") {
+                return new Response(file("public/showdown.html"));
             }
 
             // Static Frontend

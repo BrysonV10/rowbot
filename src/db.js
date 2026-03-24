@@ -31,6 +31,16 @@ export function initDB() {
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
     `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS showdowns (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user1_id INTEGER,
+            user2_id INTEGER,
+            FOREIGN KEY(user1_id) REFERENCES users(id),
+            FOREIGN KEY(user2_id) REFERENCES users(id)
+        )
+    `);
     console.log("Database initialized");
 }
 
@@ -175,5 +185,29 @@ export const dbHelpers = {
             WHERE u.discord_username = ? COLLATE NOCASE
             ORDER BY a.date DESC
         `).all(username);
+    },
+    addShowdown: (user1Id, user2Id) => {
+        return db.run("INSERT INTO showdowns (user1_id, user2_id) VALUES (?, ?)", [user1Id, user2Id]);
+    },
+    getShowdownsData: (startDate, endDate) => {
+        const showdowns = db.query("SELECT * FROM showdowns").all();
+        return showdowns.map(s => {
+            const user1 = db.query("SELECT id, discord_nickname, pledge FROM users WHERE id = ?").get(s.user1_id) || {};
+            const user2 = db.query("SELECT id, discord_nickname, pledge FROM users WHERE id = ?").get(s.user2_id) || {};
+            
+            // Get meters for user 1
+            const u1Activities = db.query("SELECT meters FROM activities WHERE user_id = ? AND date >= ? AND date <= ? AND verified = true").all(s.user1_id, startDate, endDate);
+            const u1Meters = u1Activities.reduce((sum, act) => sum + act.meters, 0);
+
+            // Get meters for user 2
+            const u2Activities = db.query("SELECT meters FROM activities WHERE user_id = ? AND date >= ? AND date <= ? AND verified = true").all(s.user2_id, startDate, endDate);
+            const u2Meters = u2Activities.reduce((sum, act) => sum + act.meters, 0);
+
+            return {
+                id: s.id,
+                user1: { ...user1, totalMeters: u1Meters },
+                user2: { ...user2, totalMeters: u2Meters }
+            };
+        });
     }
 };
