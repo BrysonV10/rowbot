@@ -17,6 +17,7 @@
 
         body {
             margin: 0;
+            padding: 2rem 1rem;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: var(--text-primary);
@@ -26,12 +27,14 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            overflow: hidden;
+            /* Allow vertical scrolling if boxes stack on tiny screens */
+            overflow-y: auto;
         }
 
         h1 {
-            font-size: 4rem;
-            margin-bottom: 1rem;
+            /* Scales between 2rem and 4rem based on viewport width */
+            font-size: clamp(2rem, 8vw, 4rem);
+            margin-bottom: 2rem;
             background: -webkit-linear-gradient(45deg, #eee, #999);
             -webkit-background-clip: text;
             background-clip: text;
@@ -40,40 +43,42 @@
             animation: fadeInDown 1s ease-out;
         }
 
-        p.subtitle {
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-            margin-bottom: 3rem;
-            animation: fadeIn 1.5s ease-out;
-        }
-
         #countdown {
-            display: flex;
-            gap: 2rem;
-            font-size: 3rem;
-            font-weight: bold;
+            display: grid;
+            /* Creates columns that wrap automatically. Min 120px, Max 150px per box. */
+            grid-template-columns: repeat(auto-fit, minmax(120px, 150px));
+            gap: 1.5rem;
+            justify-content: center;
+            width: 100%;
+            max-width: 800px;
             animation: scaleIn 0.8s ease-out;
         }
 
         .time-box {
             background: rgba(255, 255, 255, 0.05);
-            padding: 1.5rem 2rem;
+            padding: 1.5rem 0.5rem;
             border-radius: 12px;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             backdrop-filter: blur(4px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            min-width: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        div.time-box span {
+        /* The big numbers */
+        .time-box span:first-child {
             display: block;
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            font-weight: bold;
+            line-height: 1;
         }
 
         .label {
             display: block;
-            font-size: 1rem;
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
             color: var(--text-secondary);
-            margin-top: 0.5rem;
+            margin-top: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 2px;
         }
@@ -87,16 +92,6 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
             }
         }
 
@@ -115,6 +110,7 @@
 </head>
 
 <body>
+
     <div id="countdown">
         <div class="time-box">
             <span id="days">00</span>
@@ -137,10 +133,9 @@
     <script>
         async function init() {
             try {
-                // Fetch config to get start date
                 const response = await fetch('/api/config');
                 const config = await response.json();
-                const startDate = new Date(config.start).getTime(); // Changed to match server endpoint implementation I will write
+                const startDate = new Date(config.start).getTime();
 
                 function updateCountdown() {
                     const now = new Date().getTime();

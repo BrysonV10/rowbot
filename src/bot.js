@@ -49,6 +49,7 @@ export async function startBot() {
             const helpMessage = `**Available Commands:**
 \`!row-setup\` - Connect your Concept2 account or manually log your activity.
 \`!pledge <meters>\` - Pledge a goal for total meters.
+\`!users\` - View all users and their pledges.
 \`!help\` - Show this help message.
 
 **Manager Only Commands:**
@@ -101,6 +102,28 @@ export async function startBot() {
             await message.reply("Starting sync process...");
             const count = await syncAllUsers();
             await message.channel.send(`Sync complete. Processed ${count} users.`);
+        }
+
+        if (message.content.startsWith("!users")) {
+            const users = dbHelpers.getAllUsers();
+            if (users.length === 0) {
+                return message.reply("No users found.");
+            }
+
+            const data = [
+                ['User', 'Pledge'],
+                ...users.map(u => [
+                    u.discord_nickname || u.discord_username,
+                    u.pledge || 0
+                ])
+            ];
+
+            const output = table(data);
+            if (output.length > 1990) {
+                return message.reply("Too many users to display at once.");
+            }
+
+            await message.reply(`\`\`\`\n${output}\n\`\`\``);
         }
 
         if (message.content.startsWith("!export-csv")) {
