@@ -66,6 +66,9 @@ export const dbHelpers = {
     setPledge: (discordId, pledge) => {
         return db.run("UPDATE users SET pledge = ? WHERE discord_id = ?", [pledge, discordId]);
     },
+    setNicknameById: (id, nickname) => {
+        return db.run("UPDATE users SET discord_nickname = ? WHERE id = ?", [nickname, id]);
+    },
     getAllUsers: () => {
         return db.query("SELECT * FROM users").all();
     },

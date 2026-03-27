@@ -15,7 +15,8 @@ function showMenu() {
     console.log("=========================================\n");
     console.log("1. Create a Showdown");
     console.log("2. Mass-input pledges for users with 0 pledge");
-    console.log("3. Exit\n");
+    console.log("3. Edit a Discord Nickname");
+    console.log("4. Exit\n");
 
     rl.question("Select an option: ", (option) => {
         if (option === '1') {
@@ -23,6 +24,8 @@ function showMenu() {
         } else if (option === '2') {
             massInputPledges();
         } else if (option === '3') {
+            editNickname();
+        } else if (option === '4') {
             console.log("Goodbye!");
             rl.close();
             process.exit(0);
@@ -124,6 +127,41 @@ async function massInputPledges() {
 
     console.log("\nFinished mass inputting pledges.");
     showMenu();
+}
+
+function editNickname() {
+    const users = dbHelpers.getAllUsers();
+    
+    console.log("\n--- Registered Users ---");
+    users.forEach(u => {
+        const name = u.discord_nickname ? u.discord_nickname : u.discord_username;
+        console.log(`ID: ${u.id.toString().padEnd(4)} | Name: ${name}`);
+    });
+    console.log("------------------------\n");
+
+    rl.question("Enter the ID of the user to edit (or 'c' to cancel): ", (uId) => {
+        if (uId.toLowerCase().trim() === 'c') return showMenu();
+        const id = parseInt(uId.trim(), 10);
+
+        if (isNaN(id)) {
+            console.error("\n❌ Error: Please provide a valid numerical ID.");
+            return showMenu();
+        }
+
+        const user = users.find(u => u.id === id);
+
+        if (!user) {
+            console.error("\n❌ Error: Could not find user with that ID.");
+            return showMenu();
+        }
+
+        rl.question(`Enter the new nickname for ${user.discord_username} (currently ${user.discord_nickname || 'none'}): `, (newNickname) => {
+            const nickname = newNickname.trim() === '' ? null : newNickname.trim();
+            dbHelpers.setNicknameById(id, nickname);
+            console.log(`\n✅ Success! Nickname for user ID ${id} set to ${nickname || 'none'}`);
+            showMenu();
+        });
+    });
 }
 
 // Start the admin menu
