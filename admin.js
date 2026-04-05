@@ -1,5 +1,6 @@
 import { dbHelpers, initDB } from "./src/db.js";
 import * as readline from "readline";
+import axios from "axios";
 
 // Ensure DB is initialized
 initDB();
@@ -16,7 +17,8 @@ function showMenu() {
     console.log("1. Create a Showdown");
     console.log("2. Mass-input pledges for users with 0 pledge");
     console.log("3. Edit a Discord Nickname");
-    console.log("4. Exit\n");
+    console.log("4. Grab User Activities from Concept2");
+    console.log("5. Exit\n");
 
     rl.question("Select an option: ", (option) => {
         if (option === '1') {
@@ -26,6 +28,8 @@ function showMenu() {
         } else if (option === '3') {
             editNickname();
         } else if (option === '4') {
+            grabActivities();
+        } else if (option === '5') {
             console.log("Goodbye!");
             rl.close();
             process.exit(0);
@@ -161,6 +165,95 @@ function editNickname() {
             console.log(`\n✅ Success! Nickname for user ID ${id} set to ${nickname || 'none'}`);
             showMenu();
         });
+    });
+}
+
+function grabActivities() {
+    const users = dbHelpers.getAllUsers();
+    
+    console.log("\n--- Registered Users ---");
+    users.forEach(u => {
+        const name = u.discord_nickname ? u.discord_nickname : u.discord_username;
+        console.log(`ID: ${u.id.toString().padEnd(4)} | Name: ${name}`);
+    });
+    console.log("------------------------\n");
+
+    rl.question("Enter the ID of the user (or 'c' to cancel): ", async (uId) => {
+        if (uId.toLowerCase().trim() === 'c') return showMenu();
+        const id = parseInt(uId.trim(), 10);
+
+        if (isNaN(id)) {
+            console.error("\n❌ Error: Please provide a valid numerical ID.");
+            return showMenu();
+        }
+
+        const user = users.find(u => u.id === id);
+
+        if (!user) {
+            console.error("\n❌ Error: Could not find user with that ID.");
+            return showMenu();
+        }
+
+        if (!user.concept2_token) {
+            console.error("\n❌ Error: User has not connected a Concept2 account.");
+            return showMenu();
+        }
+
+        try {
+            let token = user.concept2_token;
+            let response;
+            const startDate = process.env.START_DATE;
+            const endDate = process.env.END_DATE;
+
+            const fetchActivities = async (accessToken) => {
+                return axios.get('https://log.concept2.com/api/users/me/results', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` },
+                    params: startDate && endDate ? { from: startDate, to: endDate, type: "rower" } : { type: "rower" }
+                });
+            };
+
+            try {
+                response = await fetchActivities(token);
+            } catch (err) {
+                if (err?.response?.status === 401) {
+                    console.log("Token expired. Attempting to refresh...");
+                    const refreshRes = await axios.post("https://log.concept2.com/oauth/access_token", new URLSearchParams({
+                        client_id: process.env.CONCEPT2_CLIENT_ID,
+                        client_secret: process.env.CONCEPT2_CLIENT_SECRET,
+                        grant_type: "refresh_token",
+                        scope: "user:read,results:write",
+                        refresh_token: user.concept2_refresh_token
+                    }));
+                    
+                    token = refreshRes.data.access_token;
+                    dbHelpers.updateTokens(user.discord_id, token, refreshRes.data.refresh_token, user.concept2_account_id);
+                    console.log("✅ Token successfully refreshed.");
+                    response = await fetchActivities(token);
+                } else {
+                    throw err; // rethrow if it's not a 401
+                }
+            }
+
+            if (response.data && response.data.data) {
+                const activities = response.data.data;
+                console.log(`\n✅ Successfully fetched ${activities.length} activities for ${user.discord_username}:`);
+                if (activities.length > 0) {
+                    console.table(activities.map(a => ({
+                        ID: a.id,
+                        Date: a.date,
+                        Distance: a.distance,
+                        Time: (a.time / 10).toFixed(1) + 's',
+                        Verified: a.verified ? 'Yes' : 'No'
+                    })));
+                }
+            } else {
+                console.log("\nNo activities found or invalid response format.");
+            }
+        } catch (error) {
+            console.error("\n❌ Failed to grab activities:", error.response?.data || error.message);
+        }
+
+        showMenu();
     });
 }
 
