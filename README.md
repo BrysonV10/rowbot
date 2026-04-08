@@ -1,4 +1,4 @@
-# RowBot & Polyrower
+# RowBot
 
 A flexible platform for tracking rowing challenges (Erg-A-Thon) using Concept2 integration, featuring a Discord Bot for logging/management and a Web Interface that includes live results.
 
