@@ -7,7 +7,7 @@ A flexible platform for tracking rowing challenges (Erg-A-Thon) using Concept2 i
 - **Discord Integration**: Log activities, sync Concept2 accounts, and manage users directly from a Discord server.
 - **Concept2 OAuth**: Allows users to connect their Concept2 logbooks for automatic activity syncing.
 - **AI Automated Verification**: Uses Google's Gemini to verify screenshot proofs of manually-logged activities via direct messages.
-- **Web Interface (Polyrower)**: A web portal to view active challenges and see active progress bars.
+- **Web Interface**: A web portal to view progress towards the team goal
 
 ## Setup
 
